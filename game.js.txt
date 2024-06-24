@@ -1,0 +1,78 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const gameArea = document.getElementById("game-area");
+    const scoreDisplay = document.getElementById("score");
+    let score = 0;
+    let words = [];
+    let intervalId;
+
+    class Word {
+        constructor(text) {
+            this.text = text;
+            this.element = document.createElement("div");
+            this.element.className = "word";
+            this.element.textContent = this.text;
+            gameArea.appendChild(this.element);
+            this.x = Math.random() * (gameArea.clientWidth - this.element.clientWidth);
+            this.y = 0;
+            this.speed = Math.random() * 2 + 1;
+        }
+
+        move() {
+            this.y += this.speed;
+            this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+            if (this.y > gameArea.clientHeight) {
+                this.remove();
+                gameOver();
+            }
+        }
+
+        remove() {
+            gameArea.removeChild(this.element);
+            words = words.filter(word => word !== this);
+        }
+    }
+
+    function spawnWord() {
+        const word = new Word(generateRandomWord());
+        words.push(word);
+    }
+
+    function generateRandomWord() {
+        const words = ["apple", "banana", "orange", "grape", "kiwi", "lemon"];
+        return words[Math.floor(Math.random() * words.length)];
+    }
+
+    function update() {
+        words.forEach(word => word.move());
+    }
+
+    function gameOver() {
+        clearInterval(intervalId);
+        alert("Game Over! Your score is " + score);
+        location.reload();
+    }
+
+    function startGame() {
+        intervalId = setInterval(() => {
+            spawnWord();
+            update();
+        }, 1000);
+    }
+
+    document.addEventListener("keydown", (e) => {
+        const typedWord = e.key;
+        words.forEach(word => {
+            if (word.text.startsWith(typedWord)) {
+                word.text = word.text.slice(1);
+                word.element.textContent = word.text;
+                if (word.text === "") {
+                    word.remove();
+                    score += 10;
+                    scoreDisplay.textContent = "Score: " + score;
+                }
+            }
+        });
+    });
+
+    startGame();
+});
